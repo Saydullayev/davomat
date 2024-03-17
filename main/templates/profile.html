@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status check</title>
+</head>
+
+<body>
+    <h1>Profile</h1>
+    <br>
+    <p>Ism: {{ ism }}</p>
+    <br>
+    <p>Familiya: {{ familiya }}</p>
+    <br>
+    <p>Bugun ishga keldimi:
+        {% if ishdami %}
+        Ha
+        {% else %}
+        Yoq
+        {% endif %}
+    </p>
+
+    <!-- Display the distance here -->
+    <p id="distance"></p>
+
+    <!-- Button to trigger geolocation -->
+    <button onclick="getLocation()">Ish xonagacha bulgan masofani kurish</button>
+    <form method="POST">
+        {% csrf_token %}
+        <input type="text" name="lat" id="" style="display: none;">
+        <input type="text" name="long" id="" style="display: none;">
+        <input type="submit" value="" style="display: none;" id="inp3">
+    </form>
+    <button onclick="update_position()">Masofani yangilash</button>
+
+    <input type="" value="{{x}}" id = 'x' style="display: none;">
+    <input type="" value="{{y}}" id="y" style="display: none;">
+
+    <script>
+        let inp1 = document.getElementsByName('lat')[0];
+        let inp2 = document.getElementsByName('long')[0];
+        let inp3 = document.getElementById('inp3');
+        function update_position() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    let userLat = position.coords.latitude;
+                    let userLong = position.coords.longitude;
+                    inp1.value = userLat;
+                    inp2.value = userLong;
+                    inp3.click();
+                });
+            }
+        }
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function showPosition(position) {
+            var user1Lat = position.coords.latitude;
+            var user1Lon = position.coords.longitude;
+            const user2Lat = parseFloat(document.getElementById("x").value);
+            const user2Lon = parseFloat(document.getElementById("y").value);
+
+            const distance = calculateDistance(user1Lat, user1Lon, user2Lat, user2Lon);
+            document.getElementById("distance").innerHTML = "Ish honagacha bulgan masofa: " + distance.toFixed(2) + " metr";
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const earthRadius = 6371; // Radius of the earth in km
+            const dLat = (lat2 - lat1) * Math.PI / 180; // Convert degrees to radians
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const distance = earthRadius * c * 1000; // Distance in meters
+            return distance;
+        }
+
+        function showError(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("User denied the request for geolocation.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Location information is unavailable.");
+                    break;
+                case error.TIMEOUT:
+                    alert("The request to get user location timed out.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert("An unknown error occurred.");
+                    break;
+            }
+        }
+    </script>
+
+</body>
+
+</html>
